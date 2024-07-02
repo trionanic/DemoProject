@@ -1,14 +1,29 @@
-
 version: 2.1
-
 orbs:
-  welcome: circleci/welcome-orb@0.4.1
+  ruby: circleci/ruby@2.0.1
+  
+executors:
+  ruby-executor:
+    docker:
+          - image: cimg/ruby:3.2.3-node
 
+jobs:
+  test:
+    executor: ruby-executor
+    steps:
+      - checkout
+      - ruby/install-deps
+      - run:
+          name: Set up database
+          command: |
+            bundle exec rake db:create RAILS_ENV=test
+            bundle exec rake db:schema:load RAILS_ENV=test
+      - run:
+          name: Run tests
+          command: bundle exec rails test
 
 workflows:
   version: 2
-  welcome:
+  test:
     jobs:
-      - welcome/run
-      
-
+      - test
